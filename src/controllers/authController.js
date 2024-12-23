@@ -3,6 +3,8 @@ import ENV from '../config/environment.js'
 import UserRepository from '../repositories/userRepository.js'
 import bcrypt from 'bcrypt'
 import EmailHelper from '../helpers/emailHelper.js'
+import ValidationHelper from '../helpers/validationHelper.js'
+const repository = new UserRepository()
 
 export const registerUser = async (req, res) => {
     console.log('Esto es registro')
@@ -11,16 +13,19 @@ export const registerUser = async (req, res) => {
         const {name, email, password, phone} = req.body
 
         //Valido datos
+        ValidationHelper.verifyString('Nombre', name, 4)
+        ValidationHelper.isNumber('Teléfono', phone)
+        ValidationHelper.isEmail('Email', email)
+        ValidationHelper.verifyMinLength('Telefóno', phone, 8)
+        ValidationHelper.verifyString('Clave', password, 8)
 
         //Inserto usuario
-        const repository = new UserRepository()
         const userObj = await repository.insert({
-            name: name,
-            email: email,
+            name: ValidationHelper.clearString(name),
+            email: ValidationHelper.clearEmail(email),
             password: await bcrypt.hash(password, 10),
-            phone: phone
+            phone: ValidationHelper.clearString(phone)
         })
-        console.log(userObj)
 
         //Genero token de validacion
         const token = jwt.sign(
@@ -30,10 +35,9 @@ export const registerUser = async (req, res) => {
         )
 
         //Envio mail
-        const url = `${ENV.API_URL}:${ENV.API_PORT}/auth/verify/${token}`
+        const url = `${ENV.API_URL}/auth/verify/${token}`
         const body = `Hola ${name}, para validar tu cuenta <a href='${url}'>hacé click acá</a>.`
-        const emailObj = new EmailHelper()
-        await emailObj.send(email, 'Valida tu cuenta', body)
+        await EmailHelper.send(email, 'Valida tu cuenta', body)
 
         //Devuelvo respuesta
         res.sendStatus(201)
@@ -51,9 +55,10 @@ export const loginUser = async (req, res) => {
         const {email, password} = req.body
 
         //Valido datos
+        ValidationHelper.isEmail('Email', email)
+        ValidationHelper.verifyString('Clave', password, 8)
 
         //Chequeo usuario
-        const repository = new UserRepository()
         const userObj = await repository.getByEmail(email)
         if (!userObj) {
             throw new Error('Verifica tu email o password')
@@ -72,7 +77,8 @@ export const loginUser = async (req, res) => {
         const user = {
             id: userObj.id,
             name: userObj.name,
-            email: email
+            email: email,
+            phone: userObj.phone
         }
         const token = jwt.sign(user, ENV.SECRET_KEY, {expiresIn: '1d'})
 
@@ -89,10 +95,8 @@ export const verifyUser = async (req, res) => {
     try {
         const {token} = req.params
         console.log('Esto es el verify: ' + token)
-        const payload = jwt.verify(token, ENV.SECRET_KEY)
-        const email = payload.email
+        const {email} = jwt.verify(token, ENV.SECRET_KEY)
 
-        const repository = new UserRepository()
         const userObj = await repository.getByEmail(email)
         if (!userObj) {
             throw new Error('Usuario no valido')
@@ -100,7 +104,7 @@ export const verifyUser = async (req, res) => {
 
         repository.verify(email)
 
-        res.redirect(`${ENV.APP_URL}:${ENV.APP_PORT}/login`)
+        res.redirect(`${ENV.APP_URL}/login`)
     }
     catch(error) {
         console.error(error)
@@ -113,7 +117,8 @@ export const forgotPassword = async (req, res) => {
         console.log('Esto es forgotPassword')
         const {email} = req.body
 
-        const repository = new UserRepository()
+        ValidationHelper.isEmail('Email', email)
+
         const userObj = await repository.getByEmail(email)
         if (!userObj) {
             throw new Error('Usuario no valido')
@@ -125,10 +130,9 @@ export const forgotPassword = async (req, res) => {
             {expiresIn: '1d'}
         )
 
-        const url = `${ENV.APP_URL}:${ENV.APP_PORT}/cambiar-clave/${token}`
+        const url = `${ENV.APP_URL}/change-password/${token}`
         const body = `Hola ${userObj.name}, para resetar tu clave <a href='${url}'>hace click aca</a>`
-        const emailObj = new EmailHelper()
-        await emailObj.send(email, 'Resetea tu clave', body)
+        await EmailHelper.send(email, 'Resetea tu clave', body)
 
         res.sendStatus(200)
     }
@@ -142,10 +146,11 @@ export const resetPassword = async (req, res) => {
     try {
         console.log('Esto es un resetPassword')
         const {token, password, password2} = req.body
-
         const {email} = jwt.verify(token, ENV.SECRET_KEY)
+
+        ValidationHelper.isEmail('Email', email)
+        ValidationHelper.verifyString('Clave', password, 8)
         
-        const repository = new UserRepository()
         const userObj = await repository.getByEmail(email)
         if (!userObj) {
             throw new Error('Usuario no valido')

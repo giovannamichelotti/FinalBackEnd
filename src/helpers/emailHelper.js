@@ -1,36 +1,29 @@
-import nodemailer from 'nodemailer'
+import formData from 'form-data'
+import Mailgun from 'mailgun.js'
 import ENV from '../config/environment.js'
 
 class EmailHelper {
-    constructor() {
-        this.transport = nodemailer.createTransport({
-            host: ENV.SMTP.HOST,
-            port: ENV.SMTP.PORT,
-            secure: true,
-            auth: {
-                user: ENV.SMTP.USER,
-                pass: ENV.SMTP.PASS
-            }
-        })
-    }
+    static async send(email, subject, body) { 
+        try {
+            const mailgun = new Mailgun(formData)
+            const mg = mailgun.client({
+                username: 'api',
+                key: ENV.MAILGUN.KEY,
+            })
 
-    async send(email, subject, body) {
-        const options = {
-            from: `"Tp Final" <${ENV.SMTP.USER}>`,
-            to: email,
-            subject: subject,
-            html: body
-        }
-        this.transport.sendMail(
-            options,
-            (error, info) => {
-                if (error) {
-                    console.error('Error sending email: ', error)
-                    throw new Error('Error sending email')
-                }
-                console.log('Email sent', info.response)
+            const options = {
+                from: `"Tp Final" <${ENV.MAILGUN.FROM}>`,
+                to: email,
+                subject: subject,
+                html: body,
             }
-        )
+
+            const response = await mg.messages.create(ENV.MAILGUN.DOMAIN, options)
+            return response
+        } catch (err) {
+            console.log('E ' + v, 'Error sending email...', err.message)
+            throw new Error(`Mailgun Error: ${err.message}`)
+        }
     }
 }
 

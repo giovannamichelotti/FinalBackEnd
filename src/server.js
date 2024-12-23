@@ -13,7 +13,7 @@ const app = express()
 app.use(express.json())
 
 const corsOptions = {
-    origin: `${ENV.APP_URL}:${ENV.APP_PORT}`,
+    origin: `${ENV.APP_URL}`,
     methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTION'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }
@@ -25,5 +25,5 @@ app.use('/contacts', authMiddleware, contactsRoutes)
 app.use('/messages', authMiddleware, messagesRoutes)
 
 app.listen(PORT, () => {
-    console.log(`servidor iniciado en ${ENV.API_URL}:${PORT}`)
+    console.log(`servidor iniciado en ${ENV.API_URL}`)
 })

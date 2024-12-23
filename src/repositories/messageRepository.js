@@ -10,18 +10,49 @@ class MessageRepository {
             database: ENV.DB.DATABASE
         })
     }
+
+    async get(from, to) {
+        console.log(`select * from messages where (origin_phone = '${from}' and destination_phone = '${to}') or (destination_phone = '${from}' and origin_phone = '${to}')`)
+        try {
+            const [messages] = await this.pool.query(
+                'select * from messages where (origin_phone = ? and destination_phone = ?) or (destination_phone = ? and origin_phone = ?)',
+                [from, to, from, to]
+            )
+            return messages
+        }
+        catch(error) {
+            console.error('Error al obtener mensajes:', error.message)
+            throw new Error('Error al obtener mensajes')
+        }
+    }
+
+    async insert(from, to, message) {
+        try {
+            const [result] = await this.pool.query(
+                'insert into messages (origin_phone, destination_phone, message) values (?, ?, ?)',
+                [from, to, message]
+            )
+            return result.insertId
+        }
+        catch(error) {
+            console.error(`Error al insertar mensaje: ${error.message} (${error.code})`)
+            throw new Error('No se pudo insertar mensaje')
+        }
+    }
+
+    async remove(from, id) {
+        try {
+            await this.pool.query(
+                'delete from messages where (origin_phone = ? and id = ?) or (destination_phone = ? and id = ?)',
+                [from, id, to, id]
+            )
+            return true
+        }
+        catch(error) {
+            console.error('Error al eliminar mensaje:', error.message)
+            throw new Error('Error al eliminar mensaje')
+        }
+    }
 }
 
 export default MessageRepository
-
-/* Crear las clases de los repositorios:
-messageRepository.js
-contactRespotory.js
-
-Ayudas:
-Ir por partes:
-1. crear clase sin código
-2. exponer la clase (export)
-3. Importar dependencias necesarias
-4. Agregar el constructor sin código
-5. Crear la propiedad pool para la conexión con la base de datos usando los datos del ENV. */

@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise'
 import ENV from '../config/environment.js'
+import ValidationHelper from '../helpers/validationHelper.js'
 
 class UserRepository {
     constructor() {
@@ -12,6 +13,7 @@ class UserRepository {
     }
 
     async getByEmail(email) {
+        email = ValidationHelper.clearEmail(email)
         try {
             const [users] = await this.pool.query('select * from users where email = ?', [email])
             return users[0] || null

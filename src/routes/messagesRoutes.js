@@ -1,9 +1,9 @@
 import express from 'express'
-import { getAll, insert, remove } from '../controllers/messagesController.js'
+import { get, insert, remove } from '../controllers/messagesController.js'
 
 const messagesRoutes = express.Router()
 
-messagesRoutes.get('/:phone', getAll)
+messagesRoutes.get('/:phone', get)
 messagesRoutes.post('/', insert)
 messagesRoutes.delete('/:id', remove)
 
