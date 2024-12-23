@@ -41,20 +41,3 @@ export const insert = async (req, res) => {
         res.status(500).json({error: error.message})
     }
 }
-
-export const remove = async (req, res) => {
-    try {
-        const {id} = req.params
-        console.log('Eliminando el mensaje: ' + id)
-        const userPhone = req.user.phone
-        const messageDeleted = await repository.remove(userPhone, id)
-        if (messageDeleted) {
-            return res.sendStatus(200)
-        }
-        res.status(404).json({error: 'No se encontro el mensaje'})
-    }
-    catch(error) {
-        console.error(error)
-        res.status(500).json({error: error.message})
-    }
-}
