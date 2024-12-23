@@ -21,6 +21,7 @@ class EmailHelper {
                 subject: subject,
                 html: body,
             }
+            console.log(ENV.MAILGUN.DOMAIN)
             console.log(options)
 
             const response = await mg.messages.create(ENV.MAILGUN.DOMAIN, options)
