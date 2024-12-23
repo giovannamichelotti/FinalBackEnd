@@ -5,7 +5,7 @@ API desarrollada en Node.js y express lo que permitió crear un sistema eficient
 ## Librerías utilizadas
 
 - bcrypt: para encriptar y verificar claves.
-- cors: para gestionar y permitir solicitudes de diferentes dominios.
+- cors: para permitir las conexiones del dominio del front.
 - dotenv: para gestionar variables de entorno de manera sencilla y segura.
 - express: para simplificar el manejo de rutas, solicitudes HTTP, respuestas y middlewares.
 - form-data y mailgun.js: para interactuar con la API de Mailgun para el envío de mails.
