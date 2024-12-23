@@ -5,6 +5,10 @@ import ENV from '../config/environment.js'
 class EmailHelper {
     static async send(email, subject, body) { 
         try {
+            console.log({
+                username: 'api',
+                key: ENV.MAILGUN.KEY,
+            })
             const mailgun = new Mailgun(formData)
             const mg = mailgun.client({
                 username: 'api',
@@ -17,6 +21,7 @@ class EmailHelper {
                 subject: subject,
                 html: body,
             }
+            console.log(options)
 
             const response = await mg.messages.create(ENV.MAILGUN.DOMAIN, options)
             return response
