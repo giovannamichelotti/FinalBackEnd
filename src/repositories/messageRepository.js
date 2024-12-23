@@ -39,20 +39,6 @@ class MessageRepository {
             throw new Error('No se pudo insertar mensaje')
         }
     }
-
-    async remove(from, id) {
-        try {
-            await this.pool.query(
-                'delete from messages where (origin_phone = ? and id = ?) or (destination_phone = ? and id = ?)',
-                [from, id, to, id]
-            )
-            return true
-        }
-        catch(error) {
-            console.error('Error al eliminar mensaje:', error.message)
-            throw new Error('Error al eliminar mensaje')
-        }
-    }
 }
 
 export default MessageRepository
