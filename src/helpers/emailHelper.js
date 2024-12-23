@@ -21,7 +21,7 @@ class EmailHelper {
             const response = await mg.messages.create(ENV.MAILGUN.DOMAIN, options)
             return response
         } catch (err) {
-            console.log('E ' + v, 'Error sending email...', err.message)
+            console.log('Error sending email...', err.message)
             throw new Error(`Mailgun Error: ${err.message}`)
         }
     }
